@@ -1,0 +1,8 @@
+(relative-include "../target/librustcrates.h")
+(relative-include "../ruststd/core.h")
+(add-lib "./target/release/librustcrates.dylib")
+
+;; (load "../thread/mod.carp")
+
+(defn main []
+  )

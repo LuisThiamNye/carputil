@@ -1,0 +1,70 @@
+(system-include "inttypes.h")
+(register PRIuPTR (Ptr CChar))
+
+(register-type Usize "uintptr_t")
+
+(register rstd-thread-current (Fn [] Usize) "rstd_thread_current")
+(register rstd-thread-id (Fn [Usize] Usize) "rstd_thread_Thread_id")
+(register rstd-thread-drop (Fn [Usize] ()) "rstd_thread_Thread__drop")
+
+(defmodule Usize
+  (register copy (Fn [&Usize] Usize))
+  (implements copy Usize.copy)
+
+  (register str (Fn [Usize] String))
+  (implements str Usize.str)
+
+  (defn prn [us]
+    (Usize.str us))
+  (implements prn Usize.prn)
+
+  (register format (Fn [&String Usize] String))
+  (implements format Usize.format))
+
+(defmodule UsizeRef
+  (defn str [ur] (Usize.str @ur))
+  (implements str UsizeRef.str)
+  (defn prn [ur] (Usize.str @ur))
+  (implements prn UsizeRef.prn)
+  (defn format [s x] (Usize.format s @x))
+  (implements format UsizeRef.format))
+
+(defmacro compiled [form]
+  (quasiquote (unquote (eval form))))
+
+(deftype Thread [pointer Usize])
+
+(defmodule ThreadRef
+  (sig str (Fn [(Ref Thread)] String))
+  (defn str [th]
+    (UsizeRef.format &(fmt "%s%%%s)" "(Thread " &(String.from-cstr PRIuPTR))
+                     (Thread.pointer th)))
+  (implements str ThreadRef.str)
+
+  (sig id (Fn [&Thread] Usize))
+  (defn id [th]
+    (rstd-thread-id @(Thread.pointer th))))
+
+(defmodule Thread
+  (private pointer)
+  (hidden pointer)
+  (private set-pointer)
+  (hidden set-pointer)
+  (private set-pointer!)
+  (hidden set-pointer!)
+  (private update-pointer)
+  (hidden update-pointer)
+
+  (sig str (Fn [Thread] String))
+  (defn str [th]
+    (ThreadRef.str &th))
+  (implements str Thread.str)
+
+  (defn current []
+    (Thread.init (rstd-thread-current)))
+
+  ;; (sig drop (Fn [(Ref Thread)] ()))
+  (defn drop [thread]
+    (rstd-thread-drop (ThreadRef.id thread)))
+  ;;
+  )

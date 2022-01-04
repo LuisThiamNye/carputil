@@ -1,0 +1,20 @@
+[package]
+name = "expuniffi"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "rustcrates"
+crate-type = ["cdylib"]
+
+[dependencies]
+uniffi_macros = "0.16.0"
+uniffi = {version = "0.16.0", features=["builtin-bindgen"]}
+
+[dependencies.druid]
+git = "https://github.com/linebender/druid"
+rev = "2f5beb8faba648c170a485b8d6a00d0d991a1737"
+
+[build-dependencies]
+uniffi_build = "0.16.0"
+cbindgen = "0.20.0"
